@@ -556,13 +556,12 @@ impl<'a> Environment<'a> {
     ) {
         self.increment_usage(name);
         if module != &self.current_module {
-            let _ = self
-                .imported_module_value_usages
+            self.imported_module_value_usages
                 .entry(module.clone())
-                .or_insert_with(HashMap::new)
+                .or_default()
                 .entry(name.clone())
-                .or_insert_with(Vec::new)
-                .push(location.clone());
+                .or_default()
+                .push(*location);
         }
     }
 
@@ -574,13 +573,12 @@ impl<'a> Environment<'a> {
     ) {
         self.increment_usage(name);
         if module != &self.current_module {
-            let _ = self
-                .imported_module_type_usages
+            self.imported_module_type_usages
                 .entry(module.clone())
-                .or_insert_with(HashMap::new)
+                .or_default()
                 .entry(name.clone())
-                .or_insert_with(Vec::new)
-                .push(location.clone());
+                .or_default()
+                .push(*location);
         }
     }
 
