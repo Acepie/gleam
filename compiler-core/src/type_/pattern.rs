@@ -257,15 +257,10 @@ impl<'a, 'b> PatternTyper<'a, 'b> {
                             .keys()
                             .any(|typ| typ == &name),
                     })?;
-                match vc.variant.module_defined() {
-                    None => {
-                        self.environment.increment_usage(&name, &location);
-                    }
-                    Some(module) => {
-                        self.environment.increment_usage(&name, &location);
-                        self.environment
-                            .increment_imported_value_usage(&module, &name, &location);
-                    }
+                self.environment.increment_usage(&name, &location);
+                if let Some(module) = vc.variant.module_defined() {
+                    self.environment
+                        .increment_imported_value_usage(&module, &name, &location);
                 };
                 let typ =
                     self.environment
@@ -453,6 +448,7 @@ impl<'a, 'b> PatternTyper<'a, 'b> {
                 ..
             } => {
                 // Register the value as seen for detection of unused values
+                self.environment.increment_usage(&name, &location);
 
                 let cons = self
                     .environment
@@ -607,13 +603,9 @@ impl<'a, 'b> PatternTyper<'a, 'b> {
                         })
                     }
                 }
-                match cons.variant.module_defined() {
-                    None => self.environment.increment_usage(&name, &location),
-                    Some(module) => {
-                        self.environment.increment_usage(&name, &location);
-                        self.environment
-                            .increment_imported_value_usage(&module, &name, &location);
-                    }
+                if let Some(module) = cons.variant.module_defined() {
+                    self.environment
+                        .increment_imported_value_usage(&module, &name, &location)
                 }
 
                 let instantiated_constructor_type =
