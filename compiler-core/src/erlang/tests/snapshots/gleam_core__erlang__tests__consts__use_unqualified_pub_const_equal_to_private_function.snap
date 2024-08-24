@@ -7,6 +7,6 @@ expression: "\n              fn identity(a) {\n                a\n              
 
 -export([identity/1]).
 
--spec identity(I) -> I.
+-spec identity(W) -> W.
 identity(A) ->
     A.

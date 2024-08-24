@@ -10,7 +10,7 @@ expression: "pub type Thing {\n  Thing(a: Int, b: Int)\n}\n\npub fn identity(x) 
 
 -type thing() :: {thing, integer(), integer()}.
 
--spec identity(I) -> I.
+-spec identity(X) -> X.
 identity(X) ->
     X.
 

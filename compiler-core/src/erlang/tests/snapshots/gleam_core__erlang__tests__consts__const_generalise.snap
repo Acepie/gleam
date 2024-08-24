@@ -7,7 +7,7 @@ expression: "\nfn identity(a: a) -> a {\na\n}\n\nconst id  = identity\n\npub fn 
 
 -export([main/0]).
 
--spec identity(I) -> I.
+-spec identity(W) -> W.
 identity(A) ->
     A.
 

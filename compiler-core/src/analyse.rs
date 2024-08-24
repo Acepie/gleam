@@ -280,7 +280,7 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
         // server, but are filtered out when type checking to prevent using private
         // items.
         env.module_types
-            .retain(|_, info| info.module == self.module_name);
+            .retain(|_, (_, info)| info.module == self.module_name);
 
         // Ensure no exported values have private types in their type signature
         for value in env.module_values.values() {
@@ -288,12 +288,21 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
         }
 
         let Environment {
-            module_types: types,
+            module_types,
             module_types_constructors: types_constructors,
             module_values: values,
             accessors,
             ..
         } = env;
+
+        let types = module_types
+            .iter()
+            .map(
+                |(name, (_, type_)): (&EcoString, &(u64, TypeConstructor))| {
+                    (name.clone(), type_.clone())
+                },
+            )
+            .collect();
 
         let is_internal = self
             .package_config
@@ -390,15 +399,6 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
         );
         environment.insert_module_value(name.clone(), variant);
 
-        if publicity.is_private() {
-            environment.init_usage(
-                name.clone(),
-                EntityKind::PrivateConstant,
-                location,
-                &mut self.problems,
-            );
-        }
-
         Definition::ModuleConstant(ModuleConstant {
             documentation: doc,
             location,
@@ -440,7 +440,7 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
         let target = environment.target;
         let body_location = body.last().location();
         let preregistered_fn = environment
-            .get_variable(&name)
+            .get_variable(&name, &location)
             .expect("Could not find preregistered type for function");
         let field_map = preregistered_fn.field_map().cloned();
         let preregistered_type = preregistered_fn.type_.clone();
@@ -765,7 +765,7 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
                     self.check_name_case(name_location, &name, Named::CustomTypeVariant);
 
                     let preregistered_fn = environment
-                        .get_variable(&name)
+                        .get_variable(&name, &location)
                         .expect("Could not find preregistered type for function");
                     let preregistered_type = preregistered_fn.type_.clone();
 
@@ -802,7 +802,7 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
             )
             .collect();
         let typed_parameters = environment
-            .get_type_constructor(&None, &name)
+            .get_type_constructor(&None, &name, &location)
             .expect("Could not find preregistered type constructor ")
             .parameters
             .clone();
@@ -847,6 +847,7 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
             .module_types
             .get(name)
             .expect("Type for custom type not found in register_values")
+            .1
             .type_
             .clone();
         if let Some(accessors) =
@@ -948,15 +949,6 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
                     variant: constructor_info.clone(),
                 },
             );
-
-            if value_constructor_publicity.is_private() {
-                environment.init_usage(
-                    constructor.name.clone(),
-                    EntityKind::PrivateTypeConstructor(name.clone()),
-                    constructor.location,
-                    &mut self.problems,
-                );
-            }
 
             constructors_data.push(TypeValueConstructor {
                 name: constructor.name.clone(),
@@ -1061,14 +1053,6 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
             });
         }
 
-        if publicity.is_private() {
-            environment.init_usage(
-                name.clone(),
-                EntityKind::PrivateType,
-                *location,
-                &mut self.problems,
-            );
-        };
         Ok(())
     }
 
@@ -1128,16 +1112,6 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
         };
         let result = tryblock();
         self.record_if_error(result);
-
-        // Register the type for detection of dead code.
-        if publicity.is_private() {
-            environment.init_usage(
-                name.clone(),
-                EntityKind::PrivateType,
-                *location,
-                &mut self.problems,
-            );
-        };
     }
 
     fn make_type_vars(
@@ -1242,14 +1216,6 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
             *publicity,
             deprecation.clone(),
         );
-        if publicity.is_private() {
-            environment.init_usage(
-                name.clone(),
-                EntityKind::PrivateFunction,
-                *location,
-                &mut self.problems,
-            );
-        };
         Ok(())
     }
 
@@ -1339,7 +1305,7 @@ fn analyse_type_alias(t: UntypedTypeAlias, environment: &mut Environment<'_>) ->
     // analysis aims to be fault tolerant to get the best possible feedback for
     // the programmer in the language server, so the analyser gets here even
     // though there was previously errors.
-    let type_ = match environment.get_type_constructor(&None, &alias) {
+    let type_ = match environment.get_type_constructor(&None, &alias, &location) {
         Ok(constructor) => constructor.type_.clone(),
         Err(_) => environment.new_generic_var(),
     };
@@ -1446,6 +1412,10 @@ fn generalise_module_constant(
         module: module_name.clone(),
         implementations,
     };
+    // HACK: We insert the same constant twice. Once on definition and once on generalization
+    // This means that they appear as 2 separate variables for usage
+    // We do a get on the replaced constant to force a usage of it
+    let _ = environment.get_variable(&name, &location);
     environment.insert_variable(
         name.clone(),
         variant.clone(),
@@ -1503,7 +1473,7 @@ fn generalise_function(
 
     // Lookup the inferred function information
     let function = environment
-        .get_variable(&name)
+        .get_variable(&name, &location)
         .expect("Could not find preregistered type for function");
     let field_map = function.field_map().cloned();
     let type_ = function.type_.clone();

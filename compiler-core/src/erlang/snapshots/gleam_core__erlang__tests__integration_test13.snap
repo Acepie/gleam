@@ -10,7 +10,7 @@ expression: "pub type State{ Start(Int) End(Int) }\n            pub fn build(con
 
 -type state() :: {start, integer()} | {'end', integer()}.
 
--spec build(fun((integer()) -> I)) -> I.
+-spec build(fun((integer()) -> X)) -> X.
 build(Constructor) ->
     Constructor(1).
 

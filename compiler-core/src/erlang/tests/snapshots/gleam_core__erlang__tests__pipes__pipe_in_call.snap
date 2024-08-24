@@ -7,7 +7,7 @@ expression: "\npub fn main() {\n  123\n  |> two(\n    1 |> two(2),\n    _,\n  )\
 
 -export([two/2, main/0]).
 
--spec two(J, any()) -> J.
+-spec two(Y, any()) -> Y.
 two(A, B) ->
     A.
 

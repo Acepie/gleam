@@ -7,7 +7,7 @@ expression: "fn go(x xx, y yy) { xx }\npub fn x() { go(x: 1, y: 2) go(y: 3, x: 4
 
 -export([x/0]).
 
--spec go(I, any()) -> I.
+-spec go(W, any()) -> W.
 go(Xx, Yy) ->
     Xx.
 

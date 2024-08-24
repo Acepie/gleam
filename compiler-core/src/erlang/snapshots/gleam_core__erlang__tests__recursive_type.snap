@@ -7,10 +7,10 @@ expression: "\nfn id(x) {\n  x\n}\n\npub fn main() {\n  id(id)\n}\n"
 
 -export([main/0]).
 
--spec id(I) -> I.
+-spec id(W) -> W.
 id(X) ->
     X.
 
--spec main() -> fun((M) -> M).
+-spec main() -> fun((AF) -> AF).
 main() ->
     id(fun id/1).

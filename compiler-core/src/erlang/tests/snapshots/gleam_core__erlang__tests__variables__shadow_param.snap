@@ -7,7 +7,7 @@ expression: "pub fn main(board) {\nfn(board) { board }\n  board\n}"
 
 -export([main/1]).
 
--spec main(I) -> I.
+-spec main(W) -> W.
 main(Board) ->
     fun(Board@1) -> Board@1 end,
     Board.

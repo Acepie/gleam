@@ -259,8 +259,7 @@ impl<'a, 'b> ExprTyper<'a, 'b> {
         let result = process_scope(self);
 
         // Close scope, discarding any scope local state
-        self.environment
-            .close_scope(environment_reset_data, result.is_ok(), self.problems);
+        self.environment.close_scope(environment_reset_data);
         self.hydrator.close_scope(hydrator_reset_data);
         result
     }
@@ -2279,7 +2278,7 @@ impl<'a, 'b> ExprTyper<'a, 'b> {
 
         let value_constructor = self
             .environment
-            .get_value_constructor(module.as_ref(), &name)
+            .get_value_constructor(module.as_ref(), &name, &location)
             .map_err(|e| convert_get_value_constructor_error(e, location))?
             .clone();
 
@@ -2387,18 +2386,11 @@ impl<'a, 'b> ExprTyper<'a, 'b> {
     ) -> Result<ValueConstructor, Error> {
         let constructor = match module {
             // Look in the current scope for a binding with this name
-            None => {
-                let constructor = self
-                    .environment
-                    .get_variable(name)
-                    .cloned()
-                    .ok_or_else(|| self.report_name_error(name, location))?;
-
-                // Register the value as seen for detection of unused values
-                self.environment.increment_usage(name);
-
-                constructor
-            }
+            None => self
+                .environment
+                .get_variable(name, location)
+                .cloned()
+                .ok_or_else(|| self.report_name_error(name, location))?,
 
             // Look in an imported module for a binding with this name
             Some((module_name, module_location)) => {
@@ -2842,21 +2834,26 @@ impl<'a, 'b> ExprTyper<'a, 'b> {
         &mut self,
         constructor: &TypedExpr,
     ) -> Result<Option<&FieldMap>, UnknownValueConstructorError> {
-        let (module, name) = match constructor {
+        let (module, name, location) = match constructor {
             TypedExpr::ModuleSelect {
                 module_alias,
                 label,
+                location,
                 ..
-            } => (Some(EcoString::from(module_alias.as_str())), label),
+            } => (
+                Some(EcoString::from(module_alias.as_str())),
+                label,
+                location,
+            ),
 
-            TypedExpr::Var { name, .. } => (None, name),
+            TypedExpr::Var { name, location, .. } => (None, name, location),
 
             _ => return Ok(None),
         };
 
         Ok(self
             .environment
-            .get_value_constructor(module.as_ref(), name)?
+            .get_value_constructor(module.as_ref(), name, location)?
             .field_map())
     }
 
@@ -3251,21 +3248,12 @@ impl<'a, 'b> ExprTyper<'a, 'b> {
                             });
                         }
 
-                        // Insert a variable for the argument into the environment
-                        body_typer
-                            .environment
-                            .insert_local_variable(name.clone(), arg.location, t);
-
                         if !body.first().is_placeholder() {
-                            // Register the variable in the usage tracker so that we
-                            // can identify if it is unused
-                            body_typer.environment.init_usage(
+                            // Insert a variable for the argument into the environment
+                            body_typer.environment.insert_local_variable(
                                 name.clone(),
-                                EntityKind::Variable {
-                                    how_to_ignore: Some(format!("_{name}").into()),
-                                },
                                 arg.location,
-                                body_typer.problems,
+                                t,
                             );
                         }
                     }

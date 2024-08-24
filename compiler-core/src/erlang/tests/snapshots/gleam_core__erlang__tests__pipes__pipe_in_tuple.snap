@@ -7,7 +7,7 @@ expression: "pub fn x(f) {\n  #(\n    1 |> f\n  )\n}"
 
 -export([x/1]).
 
--spec x(fun((integer()) -> K)) -> {K}.
+-spec x(fun((integer()) -> AB)) -> {AB}.
 x(F) ->
     {begin
             _pipe = 1,

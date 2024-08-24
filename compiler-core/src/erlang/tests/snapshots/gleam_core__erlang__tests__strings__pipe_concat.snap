@@ -7,7 +7,7 @@ expression: "\nfn id(x) {\n  x\n}\n\npub fn main() {\n  { \"\" |> id } <> { \"\"
 
 -export([main/0]).
 
--spec id(I) -> I.
+-spec id(W) -> W.
 id(X) ->
     X.
 

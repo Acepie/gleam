@@ -7,7 +7,7 @@ expression: "\npub fn apply(f: fn(a) -> b, a: a) { a |> f }\n"
 
 -export([apply/2]).
 
--spec apply(fun((I) -> J), I) -> J.
+-spec apply(fun((W) -> X), W) -> X.
 apply(F, A) ->
     _pipe = A,
     F(_pipe).

@@ -8,9 +8,9 @@ expression: "\n        pub type Wibble(a, b) {\n            Wibble(a, b)\n      
 -export([wibble/0]).
 -export_type([wibble/2]).
 
--type wibble(I, J) :: {wibble, I, J}.
+-type wibble(W, X) :: {wibble, W, X}.
 
--spec wibble() -> wibble(K, K).
+-spec wibble() -> wibble(Z, Z).
 wibble() ->
     erlang:error(#{gleam_error => todo,
             message => <<"This has not yet been implemented"/utf8>>,

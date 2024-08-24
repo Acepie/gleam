@@ -4,8 +4,7 @@ use crate::{
     ast::{SrcSpan, UnqualifiedImport, UntypedImport},
     build::Origin,
     type_::{
-        EntityKind, Environment, Error, ModuleInterface, Problems, UnusedModuleAlias,
-        ValueConstructorVariant,
+        Environment, Error, ModuleInterface, Problems, UnusedModuleAlias, ValueConstructorVariant,
     },
 };
 
@@ -102,13 +101,6 @@ impl<'context, 'problems> Importer<'context, 'problems> {
             self.problems.error(e);
             return;
         }
-
-        self.environment.init_usage(
-            imported_name.clone(),
-            EntityKind::ImportedType,
-            import.location,
-            self.problems,
-        );
     }
 
     fn register_unqualified_value(&mut self, import: &UnqualifiedImport, module: &ModuleInterface) {
@@ -140,26 +132,12 @@ impl<'context, 'problems> Importer<'context, 'problems> {
             }
         };
 
-        match variant {
-            ValueConstructorVariant::Record { name, module, .. } => {
-                self.environment.init_usage(
-                    used_name.clone(),
-                    EntityKind::ImportedConstructor,
-                    location,
-                    self.problems,
-                );
-                self.environment.value_names.named_constructor_in_scope(
-                    module.clone(),
-                    name.clone(),
-                    used_name.clone(),
-                );
-            }
-            _ => self.environment.init_usage(
+        if let ValueConstructorVariant::Record { name, module, .. } = variant {
+            self.environment.value_names.named_constructor_in_scope(
+                module.clone(),
+                name.clone(),
                 used_name.clone(),
-                EntityKind::ImportedValue,
-                location,
-                self.problems,
-            ),
+            );
         };
 
         // Check if value already was imported

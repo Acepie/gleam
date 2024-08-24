@@ -7,7 +7,7 @@ expression: "pub fn x(f) {\n  case 1 |> f {\n    x -> x\n  }\n}"
 
 -export([x/1]).
 
--spec x(fun((integer()) -> L)) -> L.
+-spec x(fun((integer()) -> AC)) -> AC.
 x(F) ->
     case begin
         _pipe = 1,
