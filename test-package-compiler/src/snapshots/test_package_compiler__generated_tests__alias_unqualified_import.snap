@@ -17,7 +17,7 @@ expression: "./cases/alias_unqualified_import"
 
 -type empty() :: empty.
 
--spec id(I) -> I.
+-spec id(X) -> X.
 id(X) ->
     X.
 

@@ -14,7 +14,7 @@ expression: "./cases/erlang_escape_names"
 
 -export(['receive'/1]).
 
--spec 'receive'(I) -> I.
+-spec 'receive'(W) -> W.
 'receive'(X) ->
     X.
 
@@ -35,7 +35,7 @@ expression: "./cases/erlang_escape_names"
 qualified_call() ->
     one:'receive'(1).
 
--spec qualified_value() -> fun((Q) -> Q).
+-spec qualified_value() -> fun((BD) -> BD).
 qualified_value() ->
     fun one:'receive'/1.
 
@@ -43,7 +43,7 @@ qualified_value() ->
 unqualified_call() ->
     one:'receive'(1).
 
--spec unqualified_value() -> fun((S) -> S).
+-spec unqualified_value() -> fun((BJ) -> BJ).
 unqualified_value() ->
     fun one:'receive'/1.
 
