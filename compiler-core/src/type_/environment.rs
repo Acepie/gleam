@@ -532,7 +532,7 @@ impl<'a> Environment<'a> {
     /// Returns the list of unused imported module location for the removed unused lsp action.
     pub fn convert_unused_to_warnings(&mut self, problems: &mut Problems) -> Vec<SrcSpan> {
         for (_, (type_constructor, name, usages)) in self.type_usage_graph.iter() {
-            if usages.len() == 0 {
+            if usages.is_empty() {
                 let imported = type_constructor.module != self.current_module;
                 if !imported && type_constructor.publicity != Publicity::Private {
                     continue;
@@ -547,7 +547,7 @@ impl<'a> Environment<'a> {
         }
 
         for (_, (value_constructor, name, usages)) in self.value_usage_graph.iter() {
-            if usages.len() == 0 {
+            if usages.is_empty() {
                 let warning = match (&value_constructor.variant, &value_constructor.publicity) {
                     (ValueConstructorVariant::LocalVariable { location }, _) => {
                         Warning::UnusedVariable {

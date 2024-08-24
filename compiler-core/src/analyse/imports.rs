@@ -99,7 +99,6 @@ impl<'context, 'problems> Importer<'context, 'problems> {
             .insert_type_constructor(imported_name.clone(), type_info)
         {
             self.problems.error(e);
-            return;
         }
     }
 
