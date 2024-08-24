@@ -233,7 +233,27 @@ impl<'a> Environment<'a> {
     ) -> Option<&ValueConstructor> {
         self.scope.get(name).map(|(id, v)| {
             if let Some((_, _, usages)) = self.value_usage_graph.get_mut(id) {
-                usages.push(*location);
+                match v.variant.clone() {
+                    // Do not register usage of constructor during constructor instantiation
+                    ValueConstructorVariant::Record {
+                        location: record_location,
+                        ..
+                    } if *location == record_location => (),
+                    _ => {
+                        usages.push(*location);
+                        // If a private constructor is used then its type is also used
+                        if v.publicity.is_private() {
+                            if let Some((_, type_name)) = v.type_.named_type_name() {
+                                let _ = self.module_types.get(&type_name).map(|(id, _)| {
+                                    let _ = self
+                                        .type_usage_graph
+                                        .get_mut(id)
+                                        .map(|(_, _, usages)| usages.push(*location));
+                                });
+                            }
+                        }
+                    }
+                }
             }
             v
         })
@@ -570,7 +590,7 @@ impl<'a> Environment<'a> {
                         Publicity::Private,
                     ) => Warning::UnusedConstructor {
                         location: *location,
-                        imported: *module == self.current_module,
+                        imported: *module != self.current_module,
                         name: name.clone(),
                     },
                     (
