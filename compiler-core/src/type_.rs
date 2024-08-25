@@ -923,6 +923,8 @@ impl TypeConstructor {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ValueConstructor {
+    /// Unique identifier to distinguish variables in scope
+    pub id: u64,
     pub publicity: Publicity,
     pub deprecation: Deprecation,
     pub variant: ValueConstructorVariant,

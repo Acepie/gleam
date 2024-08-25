@@ -377,27 +377,21 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
         let type_ = typed_expr.type_();
         let implementations = expr_typer.implementations;
 
-        let variant = ValueConstructor {
-            publicity,
-            deprecation: deprecation.clone(),
-            variant: ValueConstructorVariant::ModuleConstant {
+        let value_constructor = environment.insert_variable(
+            name.clone(),
+            ValueConstructorVariant::ModuleConstant {
                 documentation: doc.as_ref().map(|(_, doc)| doc.clone()),
                 location,
                 literal: typed_expr.clone(),
                 module: self.module_name.clone(),
                 implementations,
             },
-            type_: type_.clone(),
-        };
-
-        environment.insert_variable(
-            name.clone(),
-            variant.variant.clone(),
             type_.clone(),
             publicity,
             Deprecation::NotDeprecated,
         );
-        environment.insert_module_value(name.clone(), variant);
+
+        environment.insert_module_value(name.clone(), value_constructor);
 
         Definition::ModuleConstant(ModuleConstant {
             documentation: doc,
@@ -939,28 +933,20 @@ impl<'a, A> ModuleAnalyzer<'a, A> {
             } else {
                 *publicity
             };
-
-            environment.insert_module_value(
-                constructor.name.clone(),
-                ValueConstructor {
-                    publicity: value_constructor_publicity,
-                    deprecation: deprecation.clone(),
-                    type_: type_.clone(),
-                    variant: constructor_info.clone(),
-                },
-            );
-
-            constructors_data.push(TypeValueConstructor {
-                name: constructor.name.clone(),
-                parameters: fields,
-            });
-            environment.insert_variable(
+            let value_constructor = environment.insert_variable(
                 constructor.name.clone(),
                 constructor_info,
                 type_,
                 value_constructor_publicity,
                 deprecation.clone(),
             );
+
+            environment.insert_module_value(constructor.name.clone(), value_constructor);
+
+            constructors_data.push(TypeValueConstructor {
+                name: constructor.name.clone(),
+                parameters: fields,
+            });
 
             environment.value_names.named_constructor_in_scope(
                 environment.current_module.clone(),
@@ -1416,7 +1402,7 @@ fn generalise_module_constant(
     // This means that they appear as 2 separate variables for usage
     // We do a get on the replaced constant to force a usage of it
     let _ = environment.get_variable(&name, &location);
-    environment.insert_variable(
+    let value_constructor = environment.insert_variable(
         name.clone(),
         variant.clone(),
         type_.clone(),
@@ -1424,15 +1410,7 @@ fn generalise_module_constant(
         deprecation.clone(),
     );
 
-    environment.insert_module_value(
-        name.clone(),
-        ValueConstructor {
-            publicity,
-            variant,
-            deprecation: deprecation.clone(),
-            type_: type_.clone(),
-        },
-    );
+    environment.insert_module_value(name.clone(), value_constructor);
 
     Definition::ModuleConstant(ModuleConstant {
         documentation: doc,
@@ -1494,22 +1472,14 @@ fn generalise_function(
         location,
         implementations,
     };
-    environment.insert_variable(
+    let value_constructor = environment.insert_variable(
         name.clone(),
         variant.clone(),
         type_.clone(),
         publicity,
         deprecation.clone(),
     );
-    environment.insert_module_value(
-        name.clone(),
-        ValueConstructor {
-            publicity,
-            deprecation: deprecation.clone(),
-            type_,
-            variant,
-        },
-    );
+    environment.insert_module_value(name.clone(), value_constructor);
 
     Definition::Function(Function {
         documentation: doc,

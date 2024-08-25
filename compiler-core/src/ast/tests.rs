@@ -225,6 +225,7 @@ wibble}"#,
     let var = TypedExpr::Var {
         location: SrcSpan { start: 16, end: 22 },
         constructor: ValueConstructor {
+            id: 0,
             deprecation: Deprecation::NotDeprecated,
             publicity: Publicity::Private,
             variant: ValueConstructorVariant::LocalVariable {
@@ -512,6 +513,7 @@ fn find_node_bool() {
     let bool = TypedExpr::Var {
         location: SrcSpan { start: 1, end: 5 },
         constructor: ValueConstructor {
+            id: 0,
             deprecation: Deprecation::NotDeprecated,
             publicity: Publicity::Public,
             variant: ValueConstructorVariant::Record {

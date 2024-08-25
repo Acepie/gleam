@@ -177,20 +177,19 @@ impl<'a> Environment<'a> {
 
     /// Insert a variable in the current scope.
     ///
-    pub fn insert_local_variable(&mut self, name: EcoString, location: SrcSpan, type_: Arc<Type>) {
-        let id = self.ids.next();
-        let val = ValueConstructor {
-            deprecation: Deprecation::NotDeprecated,
-            publicity: Publicity::Private,
-            variant: ValueConstructorVariant::LocalVariable { location },
+    pub fn insert_local_variable(
+        &mut self,
+        name: EcoString,
+        location: SrcSpan,
+        type_: Arc<Type>,
+    ) -> ValueConstructor {
+        self.insert_variable(
+            name,
+            ValueConstructorVariant::LocalVariable { location },
             type_,
-        };
-        if name != PIPE_VARIABLE {
-            let _ = self
-                .value_usage_graph
-                .insert(id, (val.clone(), name.clone(), Vec::new()));
-        }
-        let _ = self.scope.insert(name, (id, val));
+            Publicity::Private,
+            Deprecation::NotDeprecated,
+        )
     }
 
     /// Insert a variable in the current scope.
@@ -202,9 +201,10 @@ impl<'a> Environment<'a> {
         type_: Arc<Type>,
         publicity: Publicity,
         deprecation: Deprecation,
-    ) {
+    ) -> ValueConstructor {
         let id = self.ids.next();
         let val = ValueConstructor {
+            id,
             deprecation,
             publicity,
             variant,
@@ -215,7 +215,8 @@ impl<'a> Environment<'a> {
                 .value_usage_graph
                 .insert(id, (val.clone(), name.clone(), Vec::new()));
         }
-        let _ = self.scope.insert(name, (id, val));
+        let _ = self.scope.insert(name, (id, val.clone()));
+        val
     }
 
     /// Insert (or overwrites) a value into the current module.

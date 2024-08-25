@@ -139,7 +139,7 @@ impl<'a, 'b, 'c> PipeTyper<'a, 'b, 'c> {
 
     /// Create a call argument that can be used to refer to the value on the
     /// left hand side of the pipe
-    fn typed_left_hand_value_variable_call_argument(&self) -> CallArg<TypedExpr> {
+    fn typed_left_hand_value_variable_call_argument(&mut self) -> CallArg<TypedExpr> {
         CallArg {
             label: None,
             location: self.argument_location,
@@ -165,11 +165,12 @@ impl<'a, 'b, 'c> PipeTyper<'a, 'b, 'c> {
 
     /// Create a variable that can be used to refer to the value on the left
     /// hand side of the pipe
-    fn typed_left_hand_value_variable(&self) -> TypedExpr {
+    fn typed_left_hand_value_variable(&mut self) -> TypedExpr {
         TypedExpr::Var {
             location: self.argument_location,
             name: PIPE_VARIABLE.into(),
             constructor: ValueConstructor {
+                id: self.expr_typer.environment.next_uid(),
                 publicity: Publicity::Public,
                 deprecation: Deprecation::NotDeprecated,
                 type_: self.argument_type.clone(),

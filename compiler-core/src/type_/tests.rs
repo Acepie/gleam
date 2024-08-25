@@ -2189,6 +2189,7 @@ fn private_type_from_internal_module_is_not_exposed_as_internal() {
 #[test]
 fn assert_suitable_main_function_not_module_function() {
     let value = ValueConstructor {
+        id: 0,
         publicity: Publicity::Public,
         deprecation: Deprecation::NotDeprecated,
         type_: fn_(vec![], int()),
@@ -2215,6 +2216,7 @@ fn assert_suitable_main_function_not_module_function() {
 #[test]
 fn assert_suitable_main_function_wrong_arity() {
     let value = ValueConstructor {
+        id: 0,
         publicity: Publicity::Public,
         deprecation: Deprecation::NotDeprecated,
         type_: fn_(vec![], int()),
@@ -2240,6 +2242,7 @@ fn assert_suitable_main_function_wrong_arity() {
 #[test]
 fn assert_suitable_main_function_ok() {
     let value = ValueConstructor {
+        id: 0,
         publicity: Publicity::Public,
         deprecation: Deprecation::NotDeprecated,
         type_: fn_(vec![], int()),
@@ -2265,6 +2268,7 @@ fn assert_suitable_main_function_ok() {
 #[test]
 fn assert_suitable_main_function_erlang_not_supported() {
     let value = ValueConstructor {
+        id: 0,
         publicity: Publicity::Public,
         deprecation: Deprecation::NotDeprecated,
         type_: fn_(vec![], int()),
@@ -2290,6 +2294,7 @@ fn assert_suitable_main_function_erlang_not_supported() {
 #[test]
 fn assert_suitable_main_function_javascript_not_supported() {
     let value = ValueConstructor {
+        id: 0,
         publicity: Publicity::Public,
         deprecation: Deprecation::NotDeprecated,
         type_: fn_(vec![], int()),

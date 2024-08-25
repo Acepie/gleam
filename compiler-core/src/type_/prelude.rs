@@ -195,6 +195,7 @@ pub fn link(type_: Arc<Type>) -> Arc<Type> {
 
 pub fn build_prelude(ids: &UniqueIdGenerator) -> ModuleInterface {
     let value = |variant, type_| ValueConstructor {
+        id: ids.next(),
         publicity: Publicity::Public,
         deprecation: NotDeprecated,
         variant,

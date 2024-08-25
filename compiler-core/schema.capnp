@@ -95,10 +95,11 @@ struct Type {
 }
 
 struct ValueConstructor {
-  type @0 :Type;
-  variant @1 :ValueConstructorVariant;
-  publicity @2 :Publicity;
-  deprecated @3 :Text;
+  id @0 :UInt64;
+  type @1 :Type;
+  variant @2 :ValueConstructorVariant;
+  publicity @3 :Publicity;
+  deprecated @4 :Text;
 }
 
 enum Publicity {

@@ -2420,6 +2420,7 @@ impl<'a, 'b> ExprTyper<'a, 'b> {
         };
 
         let ValueConstructor {
+            id,
             publicity,
             variant,
             type_,
@@ -2440,6 +2441,7 @@ impl<'a, 'b> ExprTyper<'a, 'b> {
         // Instantiate generic variables into unbound variables for this usage
         let type_ = self.instantiate(type_, &mut hashmap![]);
         Ok(ValueConstructor {
+            id,
             publicity,
             deprecation,
             variant,
